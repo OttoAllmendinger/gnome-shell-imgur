@@ -1,12 +1,12 @@
 // vi: sw=2 sts=2
 const Lang = imports.lang;
 const Signals = imports.signals;
+const Mainloop = imports.mainloop;
 
 const Gio = imports.gi.Gio;
 const Soup = imports.gi.Soup;
-const Mainloop = imports.mainloop;
 
-const _clientId = "c5c1369fb46f29e";
+const ClientId = "c5c1369fb46f29e";
 
 const _httpSession = new Soup.SessionAsync();
 
@@ -15,6 +15,7 @@ const Uploader = new Lang.Class({
   Name: "Uploader",
   _init: function () true
 });
+
 
 Signals.addSignalMethods(Uploader.prototype);
 
@@ -28,11 +29,11 @@ const ImgurUploader = new Lang.Class({
   baseUrl: "https://api.imgur.com/3/",
 
   _init: function (clientId) {
-    this._clientId = clientId;
+    this._clientId = clientId || ClientId;
   },
 
   _getMimetype: function (filename) {
-    return 'image/jpeg'; // FIXME
+    return 'image/png'; // FIXME
   },
 
   _getPostMessage: function (filename, callback) {
@@ -67,42 +68,90 @@ const ImgurUploader = new Lang.Class({
 
 
   upload: function (filename) {
-    this.emit('start');
-
     this._getPostMessage(filename, Lang.bind(this, function (error, message) {
+      let total = message.request_body.length;
+      let uploaded = 0;
+
       if (error) {
         this.emit("error", error);
         return;
       }
 
+      let signalProgress = message.connect(
+        "wrote-body-data",
+        Lang.bind(this, function (message, buffer) {
+          uploaded += buffer.length;
+          this.emit("progress", uploaded, total);
+        })
+      );
+
       _httpSession.queue_message(message,
-        Lang.bind(this, function (session, response) {
-          if (response.status_code == 200) {
-            this.emit('data', JSON.parse(response.response_body.data));
+        Lang.bind(this, function (session, {status_code, response_body}) {
+          if (status_code == 200) {
+            this.emit('done', JSON.parse(response_body.data).data);
           } else {
-            log('getJSON error url: ' + url);
-            log('getJSON error status code: ' + response.status_code);
-            log('getJSON error response: ' + response.response_body.data);
-            this.emit('error', response.status_code, response);
+            log('getJSON error status code: ' + status_code);
+            log('getJSON error response: ' + response_body.data);
+
+            let errorMessage;
+
+            try {
+              errorMessage = JSON.parse(response_body.data).data.error;
+            } catch (e) {
+              log("failed to parse error message " + e);
+              errorMessage = response_body.data
+            }
+
+            this.emit(
+              'error',
+              "HTTP " + status_code + " - " + errorMessage
+            );
           }
+
+          message.disconnect(signalProgress);
       }));
     }));
   }
 });
 
+const DummyUploader = new Lang.Class({
+  Name: "DummyUploader",
+  Extends: Uploader,
+
+  _init: function () {},
+
+  upload: function () {
+    const testImage = 'http://i.imgur.com/Vkapy8W.png';
+    const size = 200000;
+    const chunk = 1000;
+    let progress = 0;
+
+    let update = Lang.bind(this, function () {
+      if (progress < size) {
+        this.emit("progress", (progress += chunk), size);
+        Mainloop.timeout_add(100, update);
+      } else {
+        this.emit("done", {link: testImage});
+      }
+    });
+
+    Mainloop.idle_add(update);
+  }
+});
 
 
 if (this['ARGV'] !== undefined) {
-    // run by gjs
-    log("command line");
 
-    let uploader = new ImgurUploader(_clientId);
+  // run by gjs
+  log("command line");
 
-    uploader.connect("data", function (obj, data) {
-      log(JSON.stringify(data));
-    });
+  let uploader = new ImgurUploader();
 
-    uploader.upload("data/test.png");
+  uploader.connect("data", function (obj, data) {
+    log(JSON.stringify(data));
+  });
 
-    Mainloop.run("main");
+  uploader.upload("data/test.png");
+
+  Mainloop.run("main");
 }
