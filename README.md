@@ -2,6 +2,12 @@
 
 Uploads screenshots directly to imgur.com and displays URL.
 
+## Disclaimer
+
+The Imgur logo and "IMGUR" are trademarks of Imgur LLC and are used here for
+informational purposes only. My application, gnome-shell-imgur, is not
+affiliated with Imgur and has not been reviewed or approved by Imgur.
+
 ## Installation
 
 ### Via extensions.gnome.org
@@ -26,3 +32,4 @@ gnome-tweak-tool.
 * Allow making window and desktop screenshots
 
 Bitcoin tip address 17t3qB7fXnYpgfqvrh6gcwJBWWM6reYfoS
+
