@@ -92,6 +92,7 @@ const SelectionBox = new Lang.Class({
       if (type === Clutter.EventType.MOTION) {
         this._drawContainer(this._box);
       } else if (type === Clutter.EventType.BUTTON_RELEASE) {
+        this._mouseDown = false;
         this.emit("select", this._box);
         this._stop();
       }
@@ -217,7 +218,14 @@ const Indicator = new Lang.Class({
     this._hoverIcon();
 
     this._selectionBox.connect("select", Lang.bind(this, function (obj, box) {
-      this._uploadScreenshot(box);
+      if ((box.w > 8) && (box.h > 8)) {
+        this._uploadScreenshot(box);
+      } else {
+        var n = this._notificationService.make();
+        this._notificationService.setError(n, _(
+            "selected region was too small - please select a larger area"
+        ));
+      }
     }));
 
     this._selectionBox.connect("stop", Lang.bind(this, function () {
