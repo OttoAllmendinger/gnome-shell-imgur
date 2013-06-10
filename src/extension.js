@@ -11,6 +11,7 @@ const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
 const Clutter = imports.gi.Clutter;
 
@@ -23,9 +24,10 @@ const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
 
 const ExtensionUtils = imports.misc.extensionUtils;
-const Extension = ExtensionUtils.getCurrentExtension();
+const Local = ExtensionUtils.getCurrentExtension();
 
-const Uploader = Extension.imports.Uploader;
+const Convenience = Local.imports.convenience;
+const Uploader = Local.imports.Uploader;
 
 
 
@@ -36,6 +38,9 @@ const NotificationIcon = 'imgur-uploader-color';
 const NotificationSourceName = 'ImgurUploader';
 const FileTemplate = 'gnome-shell-imgur-XXXXXX.png';
 
+const KeyShortcut = 'shortcut';
+const KeyEnableIndicator = 'enable-indicator';
+const SettingsSchema = 'org.gnome.shell.extensions.imgur';
 
 
 const getBox = function (x1, y1, x2, y2) {
@@ -178,18 +183,13 @@ const NotificationService = new Lang.Class({
 });
 
 
+
 const Indicator = new Lang.Class({
   Name: "ImgurUploader.Indicator",
   Extends: PanelMenu.Button,
 
-  _init: function (options) {
+  _init: function (extension) {
     this.parent(null, IndicatorName);
-
-    this._options = options;
-
-    this._selectionBox = null;
-
-    this._notificationService = new NotificationService();
 
     this._icon = new St.Icon({
       icon_name: DefaultIcon,
@@ -197,25 +197,88 @@ const Indicator = new Lang.Class({
     });
 
     this.actor.add_actor(this._icon);
-
-    this.actor.connect('button-press-event', Lang.bind(this, this._selectArea));
-    this.actor.connect('enter-event', Lang.bind(this, this._hoverIcon));
-    this.actor.connect('leave-event', Lang.bind(this, this._resetIcon));
+    this.actor.connect('enter-event', Lang.bind(this, this.hoverIcon));
+    this.actor.connect('leave-event', Lang.bind(this, this.resetIcon));
+    this.actor.connect(
+      'button-press-event',
+      Lang.bind(extension, extension._selectArea)
+    );
   },
 
-  _hoverIcon: function () {
+  hoverIcon: function () {
     this._icon.icon_name = HoverIcon;
   },
 
-  _resetIcon: function () {
+  resetIcon: function () {
     if (!this._selectionBox) {
       this._icon.icon_name = DefaultIcon;
     }
   },
 
+  destroy: function () {
+    this.parent();
+  }
+});
+
+
+
+const Extension = new Lang.Class({
+  Name: "ImgurUploader",
+
+  _init: function () {
+    this._settings = Convenience.getSettings();
+    this._selectionBox = null;
+    this._notificationService = new NotificationService();
+
+    Main.wm.addKeybinding(
+        KeyShortcut,
+        Convenience.getSettings(),
+        Meta.KeyBindingFlags.NONE,
+        Shell.KeyBindingMode.NORMAL,
+        Lang.bind(this, this._selectArea)
+    );
+
+    this._settings.connect(
+        'changed::' + KeyEnableIndicator,
+        Lang.bind(this, this._updateIndicator)
+    );
+
+    this._updateIndicator();
+  },
+
+  _createIndicator: function () {
+    if (!this._indicator) {
+      this._indicator = new Indicator(this);
+      Main.panel.addToStatusArea(IndicatorName, this._indicator);
+    }
+  },
+
+  _destroyIndicator: function () {
+    if (this._indicator) {
+      this._indicator.destroy();
+      this._indicator = null;
+    }
+  },
+
+  _updateIndicator: function () {
+    if (this._settings.get_boolean(KeyEnableIndicator)) {
+      this._createIndicator();
+    } else {
+      this._destroyIndicator();
+    }
+  },
+
   _selectArea: function () {
+    if (this._selectionBox) {
+      // prevent reentry
+      return;
+    };
+
     this._selectionBox = new SelectionBox();
-    this._hoverIcon();
+
+    if (this._indicator) {
+      this._indicator.hoverIcon();
+    }
 
     this._selectionBox.connect("select", Lang.bind(this, function (obj, box) {
       if ((box.w > 8) && (box.h > 8)) {
@@ -230,7 +293,10 @@ const Indicator = new Lang.Class({
 
     this._selectionBox.connect("stop", Lang.bind(this, function () {
       this._selectionBox = null;
-      this._resetIcon();
+
+      if (this._indicator) {
+        this._indicator.resetIcon();
+      }
     }));
   },
 
@@ -275,25 +341,27 @@ const Indicator = new Lang.Class({
   },
 
   destroy: function () {
-    this.parent();
+    this._destroyIndicator();
+    this.disconnectAll();
   }
 });
 
+Signals.addSignalMethods(Extension.prototype);
 
 
-let _indicator;
+
+let _extension;
 
 function init() {
   let theme = imports.gi.Gtk.IconTheme.get_default();
-  theme.append_search_path(Extension.path + '/icons');
+  theme.append_search_path(Local.path + '/icons');
 }
 
 function enable() {
-  _indicator = new Indicator();
-  Main.panel.addToStatusArea(IndicatorName, _indicator);
+  _extension = new Extension();
 }
 
 function disable() {
-  _indicator.destroy();
-  _indicator = null;
+  _extension.destroy();
+  _extension = null;
 }

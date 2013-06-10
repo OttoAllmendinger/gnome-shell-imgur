@@ -10,7 +10,7 @@ SOURCE = src/extension.js \
 
 ZIPFILE = gnome-shell-imgur.zip
 
-all: archive
+all: schemas archive
 
 src/schemas/gschemas.compiled: src/schemas/$(SCHEMA)
 	glib-compile-schemas src/schemas/

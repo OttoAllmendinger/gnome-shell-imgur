@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extensions">
+	<schema
+		id="org.gnome.shell.extensions.imgur"
+		path="/org/gnome/shell/extensions/imgur/">
+
+		<key name="shortcut" type="as">
+            <default><![CDATA[['<Super>F11']]]></default>
+		</key>
+
+		<key name="enable-indicator" type="b">
+			<default>true</default>
+		</key>
+	</schema>
+</schemalist>
