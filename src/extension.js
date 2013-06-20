@@ -17,6 +17,7 @@ const Clutter = imports.gi.Clutter;
 
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
+const PopupMenu = imports.ui.popupMenu;
 const Screenshot = imports.ui.screenshot;
 const MessageTray = imports.ui.messageTray;
 
@@ -28,6 +29,7 @@ const Local = ExtensionUtils.getCurrentExtension();
 
 const Convenience = Local.imports.convenience;
 const Uploader = Local.imports.Uploader;
+const Config = Local.imports.config;
 
 
 
@@ -38,9 +40,6 @@ const NotificationIcon = 'imgur-uploader-color';
 const NotificationSourceName = 'ImgurUploader';
 const FileTemplate = 'gnome-shell-imgur-XXXXXX.png';
 
-const KeyShortcut = 'shortcut';
-const KeyEnableIndicator = 'enable-indicator';
-const SettingsSchema = 'org.gnome.shell.extensions.imgur';
 
 
 const getBox = function (x1, y1, x2, y2) {
@@ -72,7 +71,7 @@ const SelectionBox = new Lang.Class({
     if (Main.pushModal(this._container)) {
       global.set_cursor(Shell.Cursor.CROSSHAIR);
       this._signalCapturedEvent  = global.stage.connect(
-        'captured-event', Lang.bind(this, this._onCaptureEvent)
+        'captured-event', this._onCaptureEvent.bind(this)
       );
     } else {
       log("Main.pushModal() === false");
@@ -191,18 +190,69 @@ const Indicator = new Lang.Class({
   _init: function (extension) {
     this.parent(null, IndicatorName);
 
+    this._signalSettings = [];
+
     this._icon = new St.Icon({
       icon_name: DefaultIcon,
       style_class: 'system-status-icon'
     });
 
     this.actor.add_actor(this._icon);
-    this.actor.connect('enter-event', Lang.bind(this, this.hoverIcon));
-    this.actor.connect('leave-event', Lang.bind(this, this.resetIcon));
-    this.actor.connect(
+    this.actor.connect('enter-event', this.hoverIcon.bind(this));
+    this.actor.connect('leave-event', this.resetIcon.bind(this));
+
+    this._signalSettings.push(_settings.connect(
+        'changed::' + Config.KeyClickAction,
+        this._updateButton.bind(this)
+    ));
+
+    this._updateButton();
+  },
+
+  _updateButton: function () {
+    const action = _settings.get_enum(Config.KeyClickAction);
+
+    if (action === Config.ClickActions.SHOW_MENU) {
+      this._disableClickAction();
+      this._enableMenu()
+    } else {
+      this._disableMenu();
+      this._enableClickAction();
+    }
+  },
+
+  _enableClickAction: function () {
+    this._signalButtonPressEvent = this.actor.connect(
       'button-press-event',
-      Lang.bind(extension, extension._selectArea)
+      function () {
+        for each (let a in arguments) log(String(a));
+      }.bind(this)
     );
+  },
+
+  _disableClickAction: function () {
+    let (signal = this._signalButtonPressEvent) {
+      if (signal) {
+        this.actor.disconnect(signal);
+      }
+    }
+  },
+
+  _enableMenu: function () {
+    const items = [
+      ["select-area", _("Select Area")],
+      ["select-window", _("Select Window")],
+      ["select-desktop", _("Select Desktop")]
+    ];
+
+    for each (let [key, title] in items) {
+      let item = new PopupMenu.PopupMenuItem(title);
+      this.menu.addMenuItem(item);
+    }
+  },
+
+  _disableMenu: function () {
+    this.menu.removeAll();
   },
 
   hoverIcon: function () {
@@ -217,6 +267,9 @@ const Indicator = new Lang.Class({
 
   destroy: function () {
     this.parent();
+    this._signalSettings.forEach(function (signal) {
+      _settings.disconnect(signal);
+    });
   }
 });
 
@@ -226,24 +279,31 @@ const Extension = new Lang.Class({
   Name: "ImgurUploader",
 
   _init: function () {
-    this._settings = Convenience.getSettings();
     this._selectionBox = null;
     this._notificationService = new NotificationService();
 
-    Main.wm.addKeybinding(
-        KeyShortcut,
-        Convenience.getSettings(),
-        Meta.KeyBindingFlags.NONE,
-        Shell.KeyBindingMode.NORMAL,
-        Lang.bind(this, this._selectArea)
-    );
+    this._signalSettings = [];
 
-    this._settings.connect(
-        'changed::' + KeyEnableIndicator,
-        Lang.bind(this, this._updateIndicator)
-    );
+    for each (let shortcut in Config.KeyShortcuts) {
+      Main.wm.addKeybinding(
+          shortcut,
+          _settings,
+          Meta.KeyBindingFlags.NONE,
+          Shell.KeyBindingMode.NORMAL,
+          this._onShortcut.bind(shortcut)
+      );
+    }
+
+    this._signalSettings.push(_settings.connect(
+        'changed::' + Config.KeyEnableIndicator,
+        this._updateIndicator.bind(this)
+    ));
 
     this._updateIndicator();
+  },
+
+  _onShortcut: function () {
+    for each (let a in arguments) log(a);
   },
 
   _createIndicator: function () {
@@ -261,7 +321,7 @@ const Extension = new Lang.Class({
   },
 
   _updateIndicator: function () {
-    if (this._settings.get_boolean(KeyEnableIndicator)) {
+    if (_settings.get_boolean(Config.KeyEnableIndicator)) {
       this._createIndicator();
     } else {
       this._destroyIndicator();
@@ -280,7 +340,7 @@ const Extension = new Lang.Class({
       this._indicator.hoverIcon();
     }
 
-    this._selectionBox.connect("select", Lang.bind(this, function (obj, box) {
+    this._selectionBox.connect("select", function (obj, box) {
       if ((box.w > 8) && (box.h > 8)) {
         this._uploadScreenshot(box);
       } else {
@@ -289,15 +349,15 @@ const Extension = new Lang.Class({
             "selected region was too small - please select a larger area"
         ));
       }
-    }));
+    }.bind(this));
 
-    this._selectionBox.connect("stop", Lang.bind(this, function () {
+    this._selectionBox.connect("stop", function () {
       this._selectionBox = null;
 
       if (this._indicator) {
         this._indicator.resetIcon();
       }
-    }));
+    }.bind(this));
   },
 
   _uploadScreenshot: function ({x, y, w, h}) {
@@ -314,35 +374,39 @@ const Extension = new Lang.Class({
     };
 
     screenshot.screenshot_area(x, y, w, h, fileName,
-        Lang.bind(this, function () {
+        function () {
           uploader.upload(fileName);
-        })
+        }.bind(this)
     );
 
     uploader.connect('progress',
-        Lang.bind(this, function (obj, bytes, total) {
+        function (obj, bytes, total) {
           this._notificationService.setProgress(notification, bytes, total);
-        })
+        }.bind(this)
     );
 
     uploader.connect('done',
-        Lang.bind(this, function (obj, data) {
+        function (obj, data) {
           this._notificationService.setFinished(notification, data.link);
           cleanup();
-        })
+        }.bind(this)
     );
 
     uploader.connect('error',
-        Lang.bind(this, function (obj, error) {
+        function (obj, error) {
           this._notificationService.setError(notification, error);
           cleanup();
-        })
+        }.bind(this)
     );
   },
 
   destroy: function () {
     this._destroyIndicator();
     this.disconnectAll();
+
+    this._signalSettings.forEach(function (signal) {
+      _settings.disconnect(signal);
+    });
   }
 });
 
@@ -351,10 +415,13 @@ Signals.addSignalMethods(Extension.prototype);
 
 
 let _extension;
+let _settings;
 
 function init() {
   let theme = imports.gi.Gtk.IconTheme.get_default();
   theme.append_search_path(Local.path + '/icons');
+
+  _settings = Convenience.getSettings();
 }
 
 function enable() {
