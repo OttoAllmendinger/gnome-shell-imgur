@@ -41,7 +41,7 @@ const ImgurSettingsWidget = new GObject.Class({
       hexpand: true
     });
 
-    const sliderShowIndicator = new Gtk.Switch();
+    const sliderShowIndicator = new Gtk.Switch({expand: false});
 
     this._grid.attach(labelShowIndicator, 0, 0, 1, 1);
     this._grid.attach(sliderShowIndicator, 1, 0, 1, 1);

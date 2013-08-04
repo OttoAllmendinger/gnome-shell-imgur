@@ -120,11 +120,13 @@ const DummyUploader = new Lang.Class({
 
   _init: function () {},
 
-  upload: function () {
+  upload: function (filename) {
     const testImage = 'http://i.imgur.com/Vkapy8W.png';
     const size = 200000;
     const chunk = 1000;
     let progress = 0;
+
+    log("DummyUploader.upload() filename=" + filename);
 
     let update = Lang.bind(this, function () {
       if (progress < size) {
