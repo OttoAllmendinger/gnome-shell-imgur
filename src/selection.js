@@ -198,19 +198,21 @@ const SelectionArea = new Lang.Class({
     }
   },
 
-  _screenshot: function ({x, y, w, h}) {
+  _screenshot: function (region) {
     let fileName = getTempFile();
 
-    if ((w > 8) && (h > 8)) {
+    if ((region.w > 8) && (region.h > 8)) {
       makeAreaScreenshot(
-          getWindowRectangle(win),
+          region,
           this.emit.bind(this, 'screenshot')
       );
     } else {
-      var n = _extension._notificationService.make();
-      _extension._notificationService.setError(n, _(
-          "selected region was too small - please select a larger area"
-      ));
+      this.emit(
+        "error",
+        _("selected region was too small - please select a larger area")
+      );
+
+      this.emit("stop");
     }
   }
 });

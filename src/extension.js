@@ -96,6 +96,11 @@ const Extension = new Lang.Class({
       this._uploadScreenshot(fileName, /* deleteAfterUpload */ true);
     }.bind(this));
 
+    this._selection.connect("error", function (selection, message) {
+      var n = _extension._notificationService.make();
+      this._notificationService.setError(n, message)
+    }.bind(this));
+
     this._selection.connect("stop", function () {
       this._selection = null;
 
@@ -106,21 +111,15 @@ const Extension = new Lang.Class({
   },
 
   _selectArea: function () {
-    this._startSelection(
-      new Selection.SelectionArea(this._notificationService)
-    );
+    this._startSelection(new Selection.SelectionArea());
   },
 
   _selectWindow: function() {
-    this._startSelection(
-      new Selection.SelectionWindow(this._notificationService)
-    );
+    this._startSelection(new Selection.SelectionWindow());
   },
 
   _selectDesktop: function () {
-    this._startSelection(
-      new Selection.SelectionDesktop(this._notificationService)
-    );
+    this._startSelection(new Selection.SelectionDesktop());
   },
 
   _uploadScreenshot: function (fileName, deleteAfterUpload) {
