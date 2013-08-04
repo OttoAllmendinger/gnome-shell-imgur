@@ -123,7 +123,7 @@ const DummyUploader = new Lang.Class({
   upload: function (filename) {
     const testImage = 'http://i.imgur.com/Vkapy8W.png';
     const size = 200000;
-    const chunk = 1000;
+    const chunk = 10000;
     let progress = 0;
 
     log("DummyUploader.upload() filename=" + filename);

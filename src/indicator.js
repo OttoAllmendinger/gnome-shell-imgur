@@ -118,6 +118,6 @@ const Indicator = new Lang.Class({
     this.parent();
     this._signalSettings.forEach(function (signal) {
       this._extension.settings.disconnect(signal);
-    });
+    }.bind(this));
   }
 });

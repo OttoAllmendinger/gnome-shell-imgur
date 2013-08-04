@@ -86,11 +86,26 @@ const makeAreaScreenshot = function ({x, y, w, h}, callback) {
 const makeWindowScreenshot = function (win, callback) {
   let fileName = getTempFile();
   let screenshot = new Shell.Screenshot();
+
+  /* FIXME this method yields corrupted images */
+
+  /*
   screenshot.screenshot_window(
       ScreenshotWindowIncludeFrame,
       ScreenshotWindowIncludeCursor,
       fileName,
       callback.bind(callback, fileName)
+  );
+  */
+
+
+  /* workaround method */
+  let [w, h] = win.get_size();
+  let [wx, wy] = win.get_position();
+
+  screenshot.screenshot_area(
+    wx, wy, w, h, fileName,
+    callback.bind(callback, fileName)
   );
 };
 
@@ -249,8 +264,6 @@ const SelectionWindow = new Lang.Class({
       if (this._selectedWindow) {
         this._screenshot(this._selectedWindow);
       }
-
-      this._capture._stop();
     }
   },
 
@@ -263,15 +276,14 @@ const SelectionWindow = new Lang.Class({
   },
 
   _screenshot: function (win) {
-    Mainloop.idle_add(
-        Main.activateWindow.bind(Main, win.get_meta_window())
-    );
+    Mainloop.idle_add(function () {
+      Main.activateWindow(win.get_meta_window());
 
-    Mainloop.idle_add(
-        makeWindowScreenshot.bind(
-          null, win, this.emit.bind(this, 'screenshot')
-        )
-    );
+      Mainloop.idle_add(function () {
+        makeWindowScreenshot(win, this.emit.bind(this, 'screenshot'));
+        this._capture._stop();
+      }.bind(this));
+    }.bind(this));
   }
 });
 
@@ -286,19 +298,24 @@ const SelectionDesktop = new Lang.Class({
   Name: "ImgurUploader.SelectionDesktop",
 
   _init: function () {
-    /*
-     * TODO make screenshot on click
-     * otherwise the menu is visible
-     */
-
-    /*
-     * TODO adapt
+    this._windows = global.get_window_actors();
     this._capture = new Capture();
     this._capture.connect('captured-event', this._onEvent.bind(this));
     this._capture.connect('stop', this.emit.bind(this, 'stop'));
+  },
+
+  _onEvent: function (capture, event) {
+    let type = event.type();
+
+    if (type === Clutter.EventType.BUTTON_PRESS) {
+      this._screenshot();
+      this._capture._stop();
+    }
+  },
+
+  _screenshot: function () {
     makeDesktopScreenshot(this.emit.bind(this, 'screenshot'));
     this.emit('stop');
-    */
   }
 });
 

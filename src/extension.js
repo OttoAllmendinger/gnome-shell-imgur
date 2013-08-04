@@ -38,8 +38,20 @@ const Extension = new Lang.Class({
     this.settings = Convenience.getSettings();
 
     this._notificationService = new Notifications.NotificationService();
+
     this._signalSettings = [];
 
+    this._signalSettings.push(this.settings.connect(
+        'changed::' + Config.KeyEnableIndicator,
+        this._updateIndicator.bind(this)
+    ));
+
+    this._updateIndicator();
+
+    this._setKeybindings();
+  },
+
+  _setKeybindings: function () {
     for each (let shortcut in Config.KeyShortcuts) {
       Main.wm.addKeybinding(
           shortcut,
@@ -49,13 +61,12 @@ const Extension = new Lang.Class({
           this.onAction.bind(this, shortcut.replace('shortcut-', ''))
       );
     }
+  },
 
-    this._signalSettings.push(this.settings.connect(
-        'changed::' + Config.KeyEnableIndicator,
-        this._updateIndicator.bind(this)
-    ));
-
-    this._updateIndicator();
+  _unsetKeybindings: function () {
+    for each (let shortcut in Config.KeyShortcuts) {
+      Main.wm.removeKeybinding(shortcut);
+    }
   },
 
   _createIndicator: function () {
@@ -123,14 +134,14 @@ const Extension = new Lang.Class({
   },
 
   _uploadScreenshot: function (fileName, deleteAfterUpload) {
-    // let uploader = new Uploader.ImgurUploader();
-    let uploader = new Uploader.DummyUploader();
+    let uploader = new Uploader.ImgurUploader();
+    // let uploader = new Uploader.DummyUploader();
 
     let notification = this._notificationService.make();
 
     let cleanup = function () {
       if (deleteAfterUpload) {
-        // Gio.File.new_for_path(fileName).delete(/* cancellable */ null);
+        Gio.File.new_for_path(fileName).delete(/* cancellable */ null);
       }
       uploader.disconnectAll();
     };
@@ -173,16 +184,15 @@ const Extension = new Lang.Class({
     f();
   },
 
-  onDefaultAction: function () {
-  },
-
   destroy: function () {
     this._destroyIndicator();
-    this.disconnectAll();
+    this._unsetKeybindings();
 
     this._signalSettings.forEach(function (signal) {
       this.settings.disconnect(signal);
-    });
+    }.bind(this));
+
+    this.disconnectAll();
   }
 });
 

@@ -22,6 +22,13 @@ const Convenience = Local.imports.convenience;
 let _settings;
 
 
+const buildHbox = function () {
+  return new Gtk.Box({
+    orientation: Gtk.Orientation.HORIZONTAL,
+    margin_top: 5,
+    expand: false
+  });
+}
 
 const ImgurSettingsWidget = new GObject.Class({
   Name: 'ImgurSettingsWidget',
@@ -34,19 +41,69 @@ const ImgurSettingsWidget = new GObject.Class({
   },
 
   _initLayout: function () {
-    this._grid = new Gtk.Grid({margin: 8});
+    this._notebook = new Gtk.Notebook();
+
+    let label;
+
+    this._prefsIndicator = this._makePrefsIndicator();
+    label = new Gtk.Label({label: _("Indicator")});
+    this._notebook.append_page(this._prefsIndicator, label);
+
+    this._prefsKeybindings = this._makePrefsKeybindings();
+    label = new Gtk.Label({label: _("Keybindings")});
+    this._notebook.append_page(this._prefsKeybindings, label);
+
+    this.add(this._notebook);
+  },
+
+  _makePrefsIndicator: function () {
+    // let prefs = new Gtk.Grid({margin: 8});
+
+    let prefs = new Gtk.Box({
+      orientation: Gtk.Orientation.VERTICAL,
+      margin: 20,
+      margin_top: 10,
+      expand: false
+    });
+
+    let hbox;
+
+
+    /* Show indicator [on|off] */
+
+    hbox = buildHbox();
 
     const labelShowIndicator = new Gtk.Label({
       label: _('Show indicator'),
-      hexpand: true
+      xalign: 0,
+      expand: true
     });
 
-    const sliderShowIndicator = new Gtk.Switch({expand: false});
+    const switchShowIndicator = new Gtk.Switch();
 
-    this._grid.attach(labelShowIndicator, 0, 0, 1, 1);
-    this._grid.attach(sliderShowIndicator, 1, 0, 1, 1);
+    switchShowIndicator.connect('notify::active', function (button) {
+      _settings.set_boolean(Config.KeyEnableIndicator, button.active);
+    }.bind(this));
+
+    switchShowIndicator.active = _settings.get_boolean(
+        Config.KeyEnableIndicator
+    );
+
+    hbox.add(labelShowIndicator);
+    hbox.add(switchShowIndicator);
+
+    prefs.add(hbox, {fill: false});
 
 
+    /* Default click action [dropdown] */
+
+    hbox = buildHbox();
+
+    const labelDefaultClickAction = new Gtk.Label({
+      label: _('Default click action'),
+      xalign: 0,
+      expand: true
+    });
 
     const clickActionOptions = [
       [_("Select Area")     , Config.ClickActions.SELECT_AREA],
@@ -55,12 +112,6 @@ const ImgurSettingsWidget = new GObject.Class({
       [_("Show Menu")       , Config.ClickActions.SHOW_MENU]
     ];
 
-    const labelDefaultClickAction = new Gtk.Label({
-      label: _('Default click action'),
-      hexpand: true
-    });
-
-
     const currentClickAction = _settings.get_enum(Config.KeyClickAction);
 
     const comboBoxDefaultClickAction = this._getComboBox(
@@ -68,20 +119,15 @@ const ImgurSettingsWidget = new GObject.Class({
       function (value) _settings.set_enum(Config.KeyClickAction, value)
     );
 
-    this._grid.attach(labelDefaultClickAction, 0, 1, 1, 1);
-    this._grid.attach(comboBoxDefaultClickAction, 1, 1, 1, 1);
+    hbox.add(labelDefaultClickAction);
+    hbox.add(comboBoxDefaultClickAction);
 
+    prefs.add(hbox, {fill: false});
 
-
-    const treeView = this._getShortcutTreeView();
-    this._grid.attach(treeView, 0, 2, 2, 4);
-
-
-    this._grid.show_all();
-    this.add(this._grid);
+    return prefs;
   },
 
-  _getShortcutTreeView: function () {
+  _makePrefsKeybindings: function () {
     let model = new Gtk.ListStore();
 
     model.set_column_types([
