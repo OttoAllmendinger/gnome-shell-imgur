@@ -2,9 +2,7 @@
 
 SCHEMA = org.gnome.shell.extensions.imgur.gschema.xml
 
-SOURCE = src/extension.js \
-		 src/Uploader.js \
-		 src/stylesheet.css \
+SOURCE = src/*.js \
 		 src/metadata.json \
 		 src/icons
 
