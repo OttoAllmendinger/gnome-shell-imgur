@@ -3,8 +3,10 @@
 SCHEMA = org.gnome.shell.extensions.imgur.gschema.xml
 
 SOURCE = src/*.js \
+		 src/stylesheet.css \
 		 src/metadata.json \
-		 src/icons
+		 src/icons \
+		 src/schemas/*
 
 ZIPFILE = gnome-shell-imgur.zip
 
