@@ -19,9 +19,9 @@ https://extensions.gnome.org/extension/ (TODO)
 
 The latest development version can be installed manually with these commands
 
-        cd && git clone https://github.com/OttoAllmendinger/gnome-shell-imgur.git
-        cd ~/.local/share/gnome-shell/extensions
-        ln -s ~/gnome-shell-imgur/src gnome-shell-imgur@ttll.de
+        git clone https://github.com/OttoAllmendinger/gnome-shell-imgur.git
+        cd gnome-shell-imgur
+        make install
 
 Then go to https://extensions.gnome.org/local/ to turn on the extension or use
 gnome-tweak-tool.
