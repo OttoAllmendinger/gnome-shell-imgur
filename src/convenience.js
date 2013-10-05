@@ -90,3 +90,42 @@ function getSettings(schema) {
 
     return new Gio.Settings({ settings_schema: schemaObj });
 }
+
+
+let versionArray = function (v) v.split(".").map(Number);
+
+function versionEqual(a, b) {
+    let bArr = versionArray(b);
+    return versionArray(a).reduce(
+        function (prev, val, index) prev && (val === bArr[index])
+    , true);
+};
+
+function versionGreater(a, b) {
+    let bArr = versionArray(b);
+    return (!versionEqual(a, b)) && versionArray(a).reduce(
+        function (prev, val, index) prev && (val >= bArr[index])
+    , true);
+};
+
+function versionSmaller(a, b) {
+    return (!versionEqual(a, b)) && (!versionGreater(a, b));
+};
+
+function currentVersion () {
+    return Config.PACKAGE_VERSION;
+}
+
+function currentVersionEqual(v) {
+    return versionEqual(currentVersion(), v);
+}
+
+function currentVersionGreaterEqual(v) {
+    return versionEqual(currentVersion(), v)
+        || versionGreater(currentVersion(), v);
+}
+
+function currentVersionSmallerEqual(v) {
+    return versionEqual(currentVersion(), v)
+        && (!versionGreater(currentVersion(), v));
+}
