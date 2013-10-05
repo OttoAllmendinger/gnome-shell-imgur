@@ -11,7 +11,6 @@ const Clutter = imports.gi.Clutter;
 
 const Main = imports.ui.main;
 
-const Config = imports.misc.config;
 
 
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
@@ -24,11 +23,11 @@ const ScreenshotWindowIncludeCursor = false;
 const ScreenshotWindowIncludeFrame = false;
 const ScreenshotDesktopIncludeCursor = false;
 
-const getVersion = function () {
-  return Config.PACKAGE_VERSION;
-}
+const ExtensionUtils = imports.misc.extensionUtils;
+const Local = ExtensionUtils.getCurrentExtension();
+const Convenience = Local.imports.convenience;
 
-const Version310 = getVersion() > "3.10";
+const Version310 = Convenience.currentVersionGreaterEqual("3.10");
 
 const getTempFile = function () {
   let [fileHandle, fileName] = GLib.file_open_tmp(FileTemplate);
@@ -153,39 +152,25 @@ const Capture = new Lang.Class({
         'captured-event', this._onCaptureEvent.bind(this)
       );
 
-      try {
-        this._setCursor(this._getCaptureCursor());
-      } catch (e) {
-        this._stop();
-        throw e;
-      }
+      this._setCaptureCursor();
     } else {
       log("Main.pushModal() === false");
     }
   },
 
-
-  _setCursor: function (cursor) {
+  _setDefaultCursor: function () {
     if (Version310) {
-      global.screen.set_cursor(cursor);
+      global.screen.set_cursor(Meta.Cursor.DEFAULT);
     } else {
-      global.set_cursor(cursor);
+      global.unset_cursor();
     }
   },
 
-  _getDefaultCursor: function () {
+  _setCaptureCursor: function () {
     if (Version310) {
-      return Meta.Cursor.DEFAULT;
+      global.screen.set_cursor(Meta.Cursor.CROSSHAIR);
     } else {
-      return Shell.Cursor.DEFAULT;
-    }
-  },
-
-  _getCaptureCursor: function () {
-    if (Version310) {
-      return Meta.Cursor.CROSSHAIR;
-    } else {
-      return Shell.Cursor.CROSSHAIR;
+      global.set_cursor(Shell.Cursor.CROSSHAIR);
     }
   },
 
@@ -210,7 +195,7 @@ const Capture = new Lang.Class({
 
   _stop: function () {
     global.stage.disconnect(this._signalCapturedEvent);
-    this._setCursor(this._getDefaultCursor());
+    this._setDefaultCursor();
     Main.uiGroup.remove_actor(this._container);
     Main.popModal(this._container);
     this._container.destroy();
