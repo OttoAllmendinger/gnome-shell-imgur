@@ -181,7 +181,12 @@ const Extension = new Lang.Class({
       throw new Error('unknown action: ' + action);
     };
 
-    f();
+    try {
+      f();
+    } catch (ex) {
+      let notification = this._notificationService.make();
+      this._notificationService.setError(notification, ex.toString());
+    }
   },
 
   destroy: function () {

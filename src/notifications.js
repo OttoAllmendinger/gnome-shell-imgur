@@ -67,7 +67,7 @@ const NotificationService = new Lang.Class({
     notification.setResident(true);
 
     notification.update(
-        _("Upload Error"),
+        _("Error"),
         error,
         { secondaryGIcon: new Gio.ThemedIcon({name: 'dialog-error'}) }
     );
