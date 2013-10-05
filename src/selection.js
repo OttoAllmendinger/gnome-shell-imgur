@@ -6,9 +6,13 @@ const Mainloop = imports.mainloop;
 
 const GLib = imports.gi.GLib;
 const Shell = imports.gi.Shell;
+const Meta = imports.gi.Meta;
 const Clutter = imports.gi.Clutter;
 
 const Main = imports.ui.main;
+
+const Config = imports.misc.config;
+
 
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
@@ -20,6 +24,11 @@ const ScreenshotWindowIncludeCursor = false;
 const ScreenshotWindowIncludeFrame = false;
 const ScreenshotDesktopIncludeCursor = false;
 
+const getVersion = function () {
+  return Config.PACKAGE_VERSION;
+}
+
+const Version310 = getVersion() > "3.10";
 
 const getTempFile = function () {
   let [fileHandle, fileName] = GLib.file_open_tmp(FileTemplate);
@@ -140,12 +149,43 @@ const Capture = new Lang.Class({
     Main.uiGroup.add_actor(this._container);
 
     if (Main.pushModal(this._container)) {
-      global.set_cursor(Shell.Cursor.CROSSHAIR);
       this._signalCapturedEvent  = global.stage.connect(
         'captured-event', this._onCaptureEvent.bind(this)
       );
+
+      try {
+        this._setCursor(this._getCaptureCursor());
+      } catch (e) {
+        this._stop();
+        throw e;
+      }
     } else {
       log("Main.pushModal() === false");
+    }
+  },
+
+
+  _setCursor: function (cursor) {
+    if (Version310) {
+      global.screen.set_cursor(cursor);
+    } else {
+      global.set_cursor(cursor);
+    }
+  },
+
+  _getDefaultCursor: function () {
+    if (Version310) {
+      return Meta.Cursor.DEFAULT;
+    } else {
+      return Shell.Cursor.DEFAULT;
+    }
+  },
+
+  _getCaptureCursor: function () {
+    if (Version310) {
+      return Meta.Cursor.CROSSHAIR;
+    } else {
+      return Shell.Cursor.CROSSHAIR;
     }
   },
 
@@ -170,7 +210,7 @@ const Capture = new Lang.Class({
 
   _stop: function () {
     global.stage.disconnect(this._signalCapturedEvent);
-    global.unset_cursor();
+    this._setCursor(this._getDefaultCursor());
     Main.uiGroup.remove_actor(this._container);
     Main.popModal(this._container);
     this._container.destroy();
