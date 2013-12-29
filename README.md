@@ -12,16 +12,17 @@ affiliated with Imgur and has not been reviewed or approved by Imgur.
 
 ### Via extensions.gnome.org
 
-The latest reviewed version can be found at
-https://extensions.gnome.org/extension/ (TODO)
+The latest reviewed version can be found at [GNOME Shell Extensions](https://extensions.gnome.org/extension/683/imgur-screenshot-uploader/).
 
 ### Via github.com
 
-The latest development version can be installed manually with these commands
+The latest development version can be installed manually with these commands:
 
-        git clone https://github.com/OttoAllmendinger/gnome-shell-imgur.git
-        cd gnome-shell-imgur
-        make install
+```sh
+git clone https://github.com/OttoAllmendinger/gnome-shell-imgur.git
+cd gnome-shell-imgur
+make install
+```
 
 Then go to https://extensions.gnome.org/local/ to turn on the extension or use
 gnome-tweak-tool.
