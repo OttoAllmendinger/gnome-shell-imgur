@@ -2,12 +2,6 @@
 
 Uploads screenshots directly to imgur.com and displays URL.
 
-## Disclaimer
-
-The Imgur logo and "IMGUR" are trademarks of Imgur LLC and are used here for
-informational purposes only. My application, gnome-shell-imgur, is not
-affiliated with Imgur and has not been reviewed or approved by Imgur.
-
 ## Installation
 
 ### Via extensions.gnome.org
@@ -26,6 +20,12 @@ make install
 
 Then go to https://extensions.gnome.org/local/ to turn on the extension or use
 gnome-tweak-tool.
+
+## Disclaimer
+
+The Imgur logo and "IMGUR" are trademarks of Imgur LLC and are used here for
+informational purposes only. My application, gnome-shell-imgur, is not
+affiliated with Imgur and has not been reviewed or approved by Imgur.
 
 ## TODO
 
