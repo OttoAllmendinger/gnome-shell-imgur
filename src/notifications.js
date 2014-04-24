@@ -17,6 +17,7 @@ const NotificationSourceName = 'ImgurUploader';
 
 
 
+const Version312 = Convenience.currentVersionGreaterEqual("3.12");
 
 const NotificationService = new Lang.Class({
   Name: "ImgurUploader.NotificationService",
@@ -51,14 +52,21 @@ const NotificationService = new Lang.Class({
     notification.setResident(true);
 
     notification.update(_("Upload Complete"), url);
-    notification.addButton('copy', _("Copy Link"));
 
-    notification.connect('action-invoked', function (n, action) {
-      if (action === 'copy') {
+    if (Version312) {
+      notification.addAction(_("Copy Link"), function () {
         St.Clipboard.get_default().set_text(St.ClipboardType.PRIMARY, url);
         St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, url);
-      }
-    });
+      });
+    } else {
+      notification.addButton('copy', _("Copy Link"));
+      notification.connect('action-invoked', function (n, action) {
+        if (action === 'copy') {
+          St.Clipboard.get_default().set_text(St.ClipboardType.PRIMARY, url);
+          St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, url);
+        }
+      });
+    }
 
     this._notificationSource.notify(notification);
   },
