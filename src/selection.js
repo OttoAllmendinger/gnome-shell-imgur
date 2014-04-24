@@ -27,8 +27,6 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Local = ExtensionUtils.getCurrentExtension();
 const Convenience = Local.imports.convenience;
 
-const Version310 = Convenience.currentVersionGreaterEqual("3.10");
-
 const getTempFile = function () {
   let [fileHandle, fileName] = GLib.file_open_tmp(FileTemplate);
   return fileName;
@@ -159,19 +157,11 @@ const Capture = new Lang.Class({
   },
 
   _setDefaultCursor: function () {
-    if (Version310) {
-      global.screen.set_cursor(Meta.Cursor.DEFAULT);
-    } else {
-      global.unset_cursor();
-    }
+    global.screen.set_cursor(Meta.Cursor.DEFAULT);
   },
 
   _setCaptureCursor: function () {
-    if (Version310) {
-      global.screen.set_cursor(Meta.Cursor.CROSSHAIR);
-    } else {
-      global.set_cursor(Shell.Cursor.CROSSHAIR);
-    }
+    global.screen.set_cursor(Meta.Cursor.CROSSHAIR);
   },
 
   _onCaptureEvent: function (actor, event) {
