@@ -14,7 +14,7 @@ const Local = ExtensionUtils.getCurrentExtension();
 
 const NotificationIcon = 'imgur-uploader-color';
 const NotificationSourceName = 'ImgurUploader';
-
+const Convenience = Local.imports.convenience;
 
 
 const Version312 = Convenience.currentVersionGreaterEqual("3.12");
