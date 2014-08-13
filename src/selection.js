@@ -20,7 +20,7 @@ const FileTemplate = 'gnome-shell-imgur-XXXXXX.png';
 
 
 const ScreenshotWindowIncludeCursor = false;
-const ScreenshotWindowIncludeFrame = false;
+const ScreenshotWindowIncludeFrame = true;
 const ScreenshotDesktopIncludeCursor = false;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -92,26 +92,12 @@ const makeAreaScreenshot = function ({x, y, w, h}, callback) {
 const makeWindowScreenshot = function (win, callback) {
   let fileName = getTempFile();
   let screenshot = new Shell.Screenshot();
-
-  /* FIXME this method yields corrupted images */
-
-  /*
+  
   screenshot.screenshot_window(
       ScreenshotWindowIncludeFrame,
       ScreenshotWindowIncludeCursor,
       fileName,
       callback.bind(callback, fileName)
-  );
-  */
-
-
-  /* workaround method */
-  let [w, h] = win.get_size();
-  let [wx, wy] = win.get_position();
-
-  screenshot.screenshot_area(
-    wx, wy, w, h, fileName,
-    callback.bind(callback, fileName)
   );
 };
 
