@@ -94,8 +94,9 @@ const Extension = new Lang.Class({
   _startSelection: function (selection) {
     if (this._selection) {
       // prevent reentry
+      log("_startSelection() error: selection already in progress");
       return;
-    };
+    }
 
     this._selection = selection;
 
@@ -109,10 +110,11 @@ const Extension = new Lang.Class({
 
     this._selection.connect("error", function (selection, message) {
       var n = _extension._notificationService.make();
-      this._notificationService.setError(n, message)
+      this._notificationService.setError(n, message);
     }.bind(this));
 
     this._selection.connect("stop", function () {
+      log(this._selection + " event: stop");
       this._selection = null;
 
       if (this._indicator) {

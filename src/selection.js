@@ -92,7 +92,7 @@ const makeAreaScreenshot = function ({x, y, w, h}, callback) {
 const makeWindowScreenshot = function (win, callback) {
   let fileName = getTempFile();
   let screenshot = new Shell.Screenshot();
-  
+
   screenshot.screenshot_window(
       ScreenshotWindowIncludeFrame,
       ScreenshotWindowIncludeCursor,
