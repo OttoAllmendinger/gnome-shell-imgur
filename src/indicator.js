@@ -83,8 +83,10 @@ const Indicator = new Lang.Class({
     for each (let [action, title] in items) {
       let item = new PopupMenu.PopupMenuItem(title);
       item.connect(
-        'activate',
-        this._extension.onAction.bind(this._extension, action)
+        'activate', function (action) {
+          this.menu.close();
+          this._extension.onAction(action);
+        }.bind(this, action)
       );
       this.menu.addMenuItem(item);
     }

@@ -300,23 +300,10 @@ const SelectionDesktop = new Lang.Class({
 
   _init: function () {
     this._windows = global.get_window_actors();
-    this._capture = new Capture();
-    this._capture.connect('captured-event', this._onEvent.bind(this));
-    this._capture.connect('stop', this.emit.bind(this, 'stop'));
-  },
-
-  _onEvent: function (capture, event) {
-    let type = event.type();
-
-    if (type === Clutter.EventType.BUTTON_PRESS) {
-      this._screenshot();
-      this._capture._stop();
-    }
-  },
-
-  _screenshot: function () {
-    makeDesktopScreenshot(this.emit.bind(this, 'screenshot'));
-    this.emit('stop');
+    Mainloop.idle_add(function () {
+      makeDesktopScreenshot(this.emit.bind(this, 'screenshot'));
+      this.emit('stop');
+    }.bind(this));
   }
 });
 
