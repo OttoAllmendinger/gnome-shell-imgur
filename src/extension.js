@@ -114,7 +114,6 @@ const Extension = new Lang.Class({
     }.bind(this));
 
     this._selection.connect("stop", function () {
-      log(this._selection + " event: stop");
       this._selection = null;
 
       if (this._indicator) {
