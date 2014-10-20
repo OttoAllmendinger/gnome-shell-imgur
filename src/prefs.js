@@ -1,3 +1,4 @@
+/*jshint moz:true */
 // vi: sts=2 sw=2 et
 //
 // accelerator setting based on
@@ -28,7 +29,7 @@ const buildHbox = function () {
     margin_top: 5,
     expand: false
   });
-}
+};
 
 const ImgurSettingsWidget = new GObject.Class({
   Name: 'ImgurSettingsWidget',
@@ -49,6 +50,10 @@ const ImgurSettingsWidget = new GObject.Class({
     label = new Gtk.Label({label: _("Indicator")});
     this._notebook.append_page(this._prefsIndicator, label);
 
+    this._prefsDefaultActions = this._makePrefsDefaultActions();
+    label = new Gtk.Label({label: _("Default Actions")});
+    this._notebook.append_page(this._prefsDefaultActions, label);
+
     this._prefsKeybindings = this._makePrefsKeybindings();
     label = new Gtk.Label({label: _("Keybindings")});
     this._notebook.append_page(this._prefsKeybindings, label);
@@ -57,8 +62,6 @@ const ImgurSettingsWidget = new GObject.Class({
   },
 
   _makePrefsIndicator: function () {
-    // let prefs = new Gtk.Grid({margin: 8});
-
     let prefs = new Gtk.Box({
       orientation: Gtk.Orientation.VERTICAL,
       margin: 20,
@@ -67,7 +70,6 @@ const ImgurSettingsWidget = new GObject.Class({
     });
 
     let hbox;
-
 
     /* Show indicator [on|off] */
 
@@ -121,6 +123,42 @@ const ImgurSettingsWidget = new GObject.Class({
 
     hbox.add(labelDefaultClickAction);
     hbox.add(comboBoxDefaultClickAction);
+
+    prefs.add(hbox, {fill: false});
+
+    return prefs;
+  },
+
+  _makePrefsDefaultActions: function () {
+    let prefs = new Gtk.Box({
+      orientation: Gtk.Orientation.VERTICAL,
+      margin: 20,
+      margin_top: 10,
+      expand: false
+    });
+
+    /* Copy link to clipboard [on|off] */
+
+    hbox = buildHbox();
+
+    const labelCopyClipboard = new Gtk.Label({
+      label: _('Copy URL to clipboard'),
+      xalign: 0,
+      expand: true
+    });
+
+    const switchCopyClipboard = new Gtk.Switch();
+
+    switchCopyClipboard.connect('notify::active', function (button) {
+      _settings.set_boolean(Config.KeyCopyClipboard, button.active);
+    }.bind(this));
+
+    switchCopyClipboard.active = _settings.get_boolean(
+        Config.KeyCopyClipboard
+    );
+
+    hbox.add(labelCopyClipboard);
+    hbox.add(switchCopyClipboard);
 
     prefs.add(hbox, {fill: false});
 

@@ -32,3 +32,6 @@ $(ZIPFILE): $(SOURCE) schemas
 	-rm $(ZIPFILE)
 	cd src && zip -r ../$(ZIPFILE) $(patsubst src/%,%,$(SOURCE))
 
+prefs: install
+	gnome-shell-extension-prefs $(UUID)
+

@@ -1,3 +1,4 @@
+/*jshint moz:true */
 // vi: sts=2 sw=2 et
 //
 // props to
@@ -24,6 +25,7 @@ const Config = Local.imports.config;
 const Uploader = Local.imports.uploader;
 const Indicator = Local.imports.indicator;
 const Selection = Local.imports.selection;
+const Clipboard = Local.imports.clipboard;
 const Notifications = Local.imports.notifications;
 
 const Convenience = Local.imports.convenience;
@@ -156,6 +158,11 @@ const Extension = new Lang.Class({
     uploader.connect('done',
         function (obj, data) {
           this._notificationService.setFinished(notification, data.link);
+
+          if (this.settings.get_boolean(Config.KeyCopyClipboard)) {
+            Clipboard.set(data.link);
+          }
+
           cleanup();
         }.bind(this)
     );

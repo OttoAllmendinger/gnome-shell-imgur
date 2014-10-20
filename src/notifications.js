@@ -1,6 +1,6 @@
+/*jshint moz:true */
 const Lang = imports.lang;
 
-const St = imports.gi.St;
 const Gio = imports.gi.Gio;
 
 const Main = imports.ui.main;
@@ -15,6 +15,7 @@ const Local = ExtensionUtils.getCurrentExtension();
 const NotificationIcon = 'imgur-uploader-color';
 const NotificationSourceName = 'ImgurUploader';
 const Convenience = Local.imports.convenience;
+const Clipboard = Local.imports.clipboard;
 
 
 const NotificationService = new Lang.Class({
@@ -50,8 +51,7 @@ const NotificationService = new Lang.Class({
     notification.update(_("Upload Complete"), url);
 
     notification.addAction(_("Copy Link"), function () {
-      St.Clipboard.get_default().set_text(St.ClipboardType.PRIMARY, url);
-      St.Clipboard.get_default().set_text(St.ClipboardType.CLIPBOARD, url);
+      Clipboard.set(url);
     });
 
     this._notificationSource.notify(notification);

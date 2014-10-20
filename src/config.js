@@ -1,3 +1,4 @@
+/*jshint moz:true */
 // vi: sts=2 sw=2 et
 
 const IndicatorName = 'de.ttll.ImgurUploader';
@@ -5,7 +6,8 @@ const IndicatorName = 'de.ttll.ImgurUploader';
 const SettingsSchema = 'org.gnome.shell.extensions.imgur';
 
 const KeyEnableIndicator = 'enable-indicator';
-const KeyClickAction = 'click-action'
+const KeyClickAction = 'click-action';
+const KeyCopyClipboard = 'copy-clipboard';
 const KeyShortcuts = [
   'shortcut-select-area',
   'shortcut-select-window',
