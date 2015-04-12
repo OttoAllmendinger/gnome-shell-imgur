@@ -30,8 +30,7 @@ const Notifications = Local.imports.notifications;
 
 const Convenience = Local.imports.convenience;
 
-
-
+const Version316 = Convenience.currentVersionGreaterEqual("3.16");
 
 const Extension = new Lang.Class({
   Name: "ImgurUploader",
@@ -54,12 +53,20 @@ const Extension = new Lang.Class({
   },
 
   _setKeybindings: function () {
+    let bindingMode;
+
+    if (Version316) {
+      bindingMode = Shell.ActionMode.NORMAL;
+    } else {
+      bindingMode = Shell.KeyBindingMode.NORMAL;
+    }
+
     for each (let shortcut in Config.KeyShortcuts) {
       Main.wm.addKeybinding(
           shortcut,
           this.settings,
           Meta.KeyBindingFlags.NONE,
-          Shell.KeyBindingMode.NORMAL,
+          bindingMode,
           this.onAction.bind(this, shortcut.replace('shortcut-', ''))
       );
     }
