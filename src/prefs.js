@@ -187,6 +187,24 @@ const ImgurSettingsWidget = new GObject.Class({
 
     prefs.add(hbox, {fill: false});
 
+
+    /* Save Location [filechooser] */
+
+    hbox = buildHbox();
+
+    const chooserSaveLocation = new Gtk.FileChooserButton({title:"Select a save location" });
+    chooserSaveLocation.set_action(Gtk.FileChooserAction.SELECT_FOLDER);
+
+    chooserSaveLocation.set_filename(_settings.get_string('save-location'));
+    chooserSaveLocation.connect('file-set', Lang.bind(this,
+            function() {
+                _settings.set_string('save-location', chooserSaveLocation.get_current_folder());
+            }));
+
+    hbox.add(chooserSaveLocation);
+
+    prefs.add(hbox, {fill: false});
+
     return prefs;
   },
 
