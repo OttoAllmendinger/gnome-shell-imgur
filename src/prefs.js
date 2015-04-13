@@ -162,6 +162,31 @@ const ImgurSettingsWidget = new GObject.Class({
 
     prefs.add(hbox, {fill: false});
 
+    /* Keep file [on|off] */
+
+    hbox = buildHbox();
+
+    const labelKeepFile = new Gtk.Label({
+      label: _('Keep Saved File'),
+      xalign: 0,
+      expand: true
+    });
+
+    const switchKeepFile = new Gtk.Switch();
+
+    switchKeepFile.connect('notify::active', function (button) {
+      _settings.set_boolean(Config.KeyKeepFile, button.active);
+    }.bind(this));
+
+    switchKeepFile.active = _settings.get_boolean(
+        Config.KeyKeepFile
+    );
+
+    hbox.add(labelKeepFile);
+    hbox.add(switchKeepFile);
+
+    prefs.add(hbox, {fill: false});
+
     return prefs;
   },
 

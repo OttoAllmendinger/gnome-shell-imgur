@@ -114,7 +114,7 @@ const Extension = new Lang.Class({
     }
 
     this._selection.connect("screenshot", function (selection, fileName) {
-      this._uploadScreenshot(fileName, /* deleteAfterUpload */ true);
+      this._uploadScreenshot(fileName, /* deleteAfterUpload */ !this.settings.get_boolean(Config.KeyKeepFile));
     }.bind(this));
 
     this._selection.connect("error", function (selection, message) {

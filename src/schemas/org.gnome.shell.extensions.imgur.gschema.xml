@@ -36,6 +36,12 @@
         enum="org.gnome.shell.extensions.imgur.click-action">
       <default>'show-menu'</default>
     </key>
+
+  
+    <key name="keep-file" type="b">
+      <default>false</default>
+    </key>
+
   </schema>
 </schemalist>
 <!--
