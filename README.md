@@ -27,10 +27,16 @@ The Imgur logo and "IMGUR" are trademarks of Imgur LLC and are used here for
 informational purposes only. My application, gnome-shell-imgur, is not
 affiliated with Imgur and has not been reviewed or approved by Imgur.
 
-## TODO
+## Contributors
 
-* Make icon drop site for local images
-* Allow making window and desktop screenshots
+* Andrey Sitnik - https://github.com/ai
+* Jacob Mischka - https://github.com/jacobmischka
+* Kate Adams - https://github.com/KateAdams
+* Maxim Kraev - https://github.com/MaximKraev
+* Sigmund Vestergaard - https://github.com/sigmundv
+
+
+## Tip Address
 
 Bitcoin tip address 17t3qB7fXnYpgfqvrh6gcwJBWWM6reYfoS
 
