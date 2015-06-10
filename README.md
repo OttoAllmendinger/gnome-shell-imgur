@@ -30,6 +30,7 @@ affiliated with Imgur and has not been reviewed or approved by Imgur.
 ## Contributors
 
 * Andrey Sitnik - https://github.com/ai
+* Geoff Saulmon - https://github.com/gsaulmon
 * Jacob Mischka - https://github.com/jacobmischka
 * Kate Adams - https://github.com/KateAdams
 * Maxim Kraev - https://github.com/MaximKraev
