@@ -114,7 +114,7 @@ const Extension = new Lang.Class({
     }
 
     this._selection.connect("screenshot", function (selection, fileName) {
-      this._uploadScreenshot(fileName, /* deleteAfterUpload */ true);
+      this._uploadScreenshot(fileName, /* deleteAfterUpload */ !this.settings.get_boolean(Config.KeyKeepFile));
     }.bind(this));
 
     this._selection.connect("error", function (selection, message) {
@@ -148,10 +148,14 @@ const Extension = new Lang.Class({
     // let uploader = new Uploader.DummyUploader();
 
     let notification = this._notificationService.make();
+    let currentFile = Gio.File.new_for_path(fileName);
+    let savepath = this.settings.get_string('save-location') + "/" + currentFile.get_basename();
 
     let cleanup = function () {
       if (deleteAfterUpload) {
-        Gio.File.new_for_path(fileName).delete(/* cancellable */ null);
+        currentFile.delete(/* cancellable */ null);
+      } else {
+	currentFile.move(Gio.File.new_for_path(savepath), Gio.FileCopyFlags.NONE, null, null);
       }
       uploader.disconnectAll();
     };

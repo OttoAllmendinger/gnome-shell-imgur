@@ -21,3 +21,4 @@ const ClickActions = {
   SELECT_DESKTOP: 3
 };
 
+const KeyKeepFile = 'keep-file';
