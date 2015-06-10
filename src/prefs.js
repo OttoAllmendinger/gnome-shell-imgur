@@ -192,15 +192,36 @@ const ImgurSettingsWidget = new GObject.Class({
 
     hbox = buildHbox();
 
-    const chooserSaveLocation = new Gtk.FileChooserButton({title:"Select a save location" });
+    const labelSaveLocation = new Gtk.Label({
+      label: _('Save location'),
+      xalign: 0,
+      expand: true
+    });
+
+
+    const chooserSaveLocation = new Gtk.FileChooserButton({
+      title: _("Select")
+    });
     chooserSaveLocation.set_action(Gtk.FileChooserAction.SELECT_FOLDER);
 
     chooserSaveLocation.set_filename(_settings.get_string('save-location'));
-    chooserSaveLocation.connect('file-set', Lang.bind(this,
-            function() {
-                _settings.set_string('save-location', chooserSaveLocation.get_current_folder());
-            }));
+    chooserSaveLocation.connect('file-set', function() {
+      _settings.set_string(
+        'save-location',
+        chooserSaveLocation.get_current_folder()
+      );
+    }.bind(this));
 
+    const _setSensitivity = function () {
+      var sensitive = _settings.get_boolean(Config.KeyKeepFile);
+      labelSaveLocation.set_sensitive(sensitive);
+      chooserSaveLocation.set_sensitive(sensitive);
+    };
+
+    switchKeepFile.connect('notify::active', _setSensitivity);
+    _setSensitivity();
+
+    hbox.add(labelSaveLocation);
     hbox.add(chooserSaveLocation);
 
     prefs.add(hbox, {fill: false});
