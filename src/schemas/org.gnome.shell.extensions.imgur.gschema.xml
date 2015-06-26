@@ -44,8 +44,8 @@
 
     <key name="save-location" type="s">
       <default>'/tmp/'</default>
-      <summary>File Save locatoin</summary>
-      <description>Location where screenshot are stored</description>
+      <summary>File Save location</summary>
+      <description>Location where screenshots are stored</description>
     </key>
 
   </schema>
