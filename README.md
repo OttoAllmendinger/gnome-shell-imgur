@@ -34,6 +34,7 @@ affiliated with Imgur and has not been reviewed or approved by Imgur.
 * Jacob Mischka - https://github.com/jacobmischka
 * Kate Adams - https://github.com/KateAdams
 * Maxim Kraev - https://github.com/MaximKraev
+* papertoilet - https://github.com/papertoilet
 * Sigmund Vestergaard - https://github.com/sigmundv
 
 
