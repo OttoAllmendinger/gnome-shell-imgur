@@ -8,8 +8,10 @@ const Lang = imports.lang;
 const Signals = imports.signals;
 
 const Gtk = imports.gi.Gtk;
+const WebKit = imports.gi.WebKit;
 // const Gio = imports.gi.Gio;
 const GObject = imports.gi.GObject;
+const Secret = imports.gi.Secret;
 
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
@@ -17,8 +19,7 @@ const _ = Gettext.gettext;
 const Local = imports.misc.extensionUtils.getCurrentExtension();
 const Config = Local.imports.config;
 const Convenience = Local.imports.convenience;
-
-
+const Uploader = Local.imports.uploader;
 
 let _settings;
 
@@ -136,6 +137,54 @@ const ImgurSettingsWidget = new GObject.Class({
       margin_top: 10,
       expand: false
     });
+
+    hbox = buildHbox();
+
+    const buttonToken = new Gtk.Button({
+      label: getTokenButtonLabel()
+    });
+
+    buttonToken.connect('clicked', function () {
+      const dialog = new Gtk.Dialog({
+        modal: true,
+        title: _('Imgur Auth'),
+        defaultWidth: 900,
+        defaultHeight: 400
+      });
+
+      const web = new WebKit.WebView();
+      web.load_uri(Config.OAuthUrl + Uploader.ClientId);
+      web.connect('title-changed', function () {
+        var params = getHashParams(web.get_uri());
+        if (params['access_token']) {
+          Secret.password_store_sync(Config.TokenSchema, {"user": params['account_username']}, Secret.COLLECTION_DEFAULT, "Imgur token", params['access_token'], null);
+          _settings.set_string(Config.KeyUsername, params['account_username']);
+          buttonToken.set_label(getTokenButtonLabel());
+          dialog.destroy();
+        }
+      });
+
+      const contentArea = dialog.get_content_area();
+      contentArea.add(web);
+
+      dialog.show_all();
+    }.bind(this));
+
+    hbox.add(buttonToken);
+
+    const buttonClearConnection = new Gtk.Button({
+      label: _('Clear connection')
+    });
+
+    buttonClearConnection.connect('clicked', function () {
+      Secret.password_clear_sync(Config.TokenSchema, {"user": _settings.get_string(Config.KeyUsername)}, null);
+      _settings.set_string(Config.KeyUsername, '');
+      buttonToken.set_label(getTokenButtonLabel());
+    });
+
+    hbox.add(buttonClearConnection);
+
+    prefs.add(hbox, {fill: false});
 
     /* Copy link to clipboard [on|off] */
 
@@ -371,4 +420,22 @@ function buildPrefsWidget() {
   widget.show_all();
 
   return widget;
+}
+
+function getHashParams(url) {
+  var hashParams = {};
+  var e,
+    a = /\+/g,  // Regex for replacing addition symbol with a space
+    r = /([^&;=]+)=?([^&;]*)/g,
+    d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+    q = url.substr(url.indexOf('#') + 1);
+
+  while (e = r.exec(q))
+    hashParams[d(e[1])] = d(e[2]);
+
+  return hashParams;
+}
+
+function getTokenButtonLabel() {
+  return _settings.get_string(Config.KeyUsername) && _('Connected as ') + _settings.get_string(Config.KeyUsername) || _('Connect Imgur');
 }

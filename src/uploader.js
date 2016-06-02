@@ -36,7 +36,7 @@ const ImgurUploader = new Lang.Class({
     return 'image/png'; // FIXME
   },
 
-  _getPostMessage: function (filename, callback) {
+  _getPostMessage: function (filename, token, callback) {
     let url = this.baseUrl + "image";
     let file = Gio.File.new_for_path(filename);
 
@@ -59,7 +59,7 @@ const ImgurUploader = new Lang.Class({
       let message = Soup.form_request_new_from_multipart(url, multipart);
 
       message.request_headers.append(
-        "Authorization", "Client-ID " + this._clientId
+        "Authorization", token && "Bearer " + token || "Client-ID " + this._clientId
       );
 
       callback(null, message);
@@ -67,8 +67,8 @@ const ImgurUploader = new Lang.Class({
   },
 
 
-  upload: function (filename) {
-    this._getPostMessage(filename, Lang.bind(this, function (error, message) {
+  upload: function (filename, token) {
+    this._getPostMessage(filename, token, Lang.bind(this, function (error, message) {
       let total = message.request_body.length;
       let uploaded = 0;
 
