@@ -8,6 +8,9 @@ Uploads screenshots directly to imgur.com and displays URL.
 
 The latest reviewed version can be found at [GNOME Shell Extensions](https://extensions.gnome.org/extension/683/imgur-screenshot-uploader/).
 
+An extension that allows copying screenshots to the local clipboard and saving
+them locally can be found at https://github.com/OttoAllmendinger/gnome-shell-screenshot
+
 ### Via github.com
 
 The latest development version can be installed manually with these commands:
