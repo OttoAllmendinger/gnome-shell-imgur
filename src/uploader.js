@@ -85,6 +85,9 @@ const ImgurUploader = new Lang.Class({
         })
       );
 
+      Soup.Session.prototype.add_feature.call(
+          _httpSession, new Soup.ProxyResolverDefault()
+      );
       _httpSession.queue_message(message,
         Lang.bind(this, function (session, {status_code, response_body}) {
           if (status_code == 200) {
