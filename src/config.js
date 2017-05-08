@@ -1,9 +1,13 @@
 /*jshint moz:true */
 // vi: sts=2 sw=2 et
 
+const Secret = imports.gi.Secret;
+
 const IndicatorName = 'de.ttll.ImgurUploader';
 
 const SettingsSchema = 'org.gnome.shell.extensions.imgur';
+
+const OAuthUrl = 'https://api.imgur.com/oauth2/authorize?response_type=token&client_id=';
 
 const KeyEnableIndicator = 'enable-indicator';
 const KeyClickAction = 'click-action';
@@ -14,6 +18,7 @@ const KeyShortcuts = [
   'shortcut-select-window',
   'shortcut-select-desktop'
 ];
+const KeyUsername = 'username';
 
 const ClickActions = {
   SHOW_MENU: 0,
@@ -22,3 +27,9 @@ const ClickActions = {
   SELECT_DESKTOP: 3
 };
 
+const TokenSchema = new Secret.Schema("org.gnome.shell.extensions.imgur.token",
+  Secret.SchemaFlags.NONE,
+  {
+    "user": Secret.SchemaAttributeType.STRING
+  }
+);

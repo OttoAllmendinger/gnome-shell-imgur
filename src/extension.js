@@ -12,6 +12,7 @@ const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
 const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
+const Secret = imports.gi.Secret;
 
 const Main = imports.ui.main;
 
@@ -185,7 +186,7 @@ const Extension = new Lang.Class({
         }.bind(this)
     );
 
-    uploader.upload(fileName);
+    uploader.upload(fileName, Secret.password_lookup_sync(Config.TokenSchema, {"user": this.settings.get_string(Config.KeyUsername)}, null));
   },
 
 
