@@ -50,6 +50,9 @@ const NotificationService = new Lang.Class({
 
     notification.update(_("Upload Complete"), url);
 
+  // Auto
+    Clipboard.set(url);
+    
     notification.addAction(_("Copy Link"), function () {
       Clipboard.set(url);
     });
