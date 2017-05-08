@@ -187,6 +187,31 @@ const ImgurSettingsWidget = new GObject.Class({
 
     prefs.add(hbox, {fill: false});
 
+    /* Open link after upload [on|off] */
+
+    hbox = buildHbox();
+
+    const labelOpenInBrowser = new Gtk.Label({
+      label: _('Open uploaded images in default web browser'),
+      xalign: 0,
+      expand: true
+    });
+
+    const switchOpenInBrowser= new Gtk.Switch();
+
+    switchOpenInBrowser.connect('notify::active', function (button) {
+      _settings.set_boolean(Config.OpenInBrowser, button.active);
+    }.bind(this));
+
+    switchOpenInBrowser.active = _settings.get_boolean(
+        Config.OpenInBrowser
+    );
+
+    hbox.add(labelOpenInBrowser);
+    hbox.add(switchOpenInBrowser);
+
+    prefs.add(hbox, {fill: false});
+
 
     /* Save Location [filechooser] */
 

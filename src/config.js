@@ -8,6 +8,7 @@ const SettingsSchema = 'org.gnome.shell.extensions.imgur';
 const KeyEnableIndicator = 'enable-indicator';
 const KeyClickAction = 'click-action';
 const KeyCopyClipboard = 'copy-clipboard';
+const OpenInBrowser = 'open-in-browser';
 const KeyKeepFile = 'keep-file';
 const KeyShortcuts = [
   'shortcut-select-area',

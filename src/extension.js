@@ -14,6 +14,7 @@ const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
 
 const Main = imports.ui.main;
+const Params = imports.misc.params;
 
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
@@ -172,6 +173,20 @@ const Extension = new Lang.Class({
 
           if (this.settings.get_boolean(Config.KeyCopyClipboard)) {
             Clipboard.set(data.link);
+          }
+
+          if (this.settings.get_boolean(Config.OpenInBrowser)) {
+            var params = Params.parse({}, {
+              workspace: -1,
+              timestamp: global.display.get_current_time_roundtrip()
+            });
+
+            let launchContext = global.create_app_launch_context(params.timestamp, params.workspace);
+
+            Gio.app_info_launch_default_for_uri(
+                data.link,
+                launchContext
+            );
           }
 
           cleanup();
